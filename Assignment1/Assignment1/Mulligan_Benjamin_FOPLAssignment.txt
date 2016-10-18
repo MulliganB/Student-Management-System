@@ -1,0 +1,385 @@
+(* http://matt.might.net/articles/grammars-bnf-ebnf/ *)
+(* http://www.cs.man.ac.uk/~pjj/bnf/bnf.html *)
+
+Program Structure:
+<ProgramStructure> ::= <ProgramName>
+					   [<VariableDeclaration>
+					   <ProcedureDeclaration>]
+					   BEGIN
+					   		[<ProcedureBody>]
+					   END;
+<ProgramStructure> ::= <ProgramName> <WHITESPACE> <VariableDeclaration>* <WHITESPACE> <ProcedureDeclaration>* <WHITESPACE> 'BEGIN' <WHITESPACE> <INDENT> <ProcedureBody>* <WHITESPACE> 'END' <SEMICOLON>;
+
+<ProcedureBody> ::= <VariableDeclaration> [<WHITESPACE> <ProcedureBlock>]? | <MotionCommand> [<WHITESPACE> <ProcedureBlock>]? | <VariableAssignment> [<WHITESPACE> <ProcedureBlock>]? | <VariableArithmetic> 												[<WHITESPACE> <ProcedureBlock>]? | <GOTOLoop> [<WHITESPACE> <ProcedureBlock>]? | <WHILE-DOLoop> [<WHITESPACE> <ProcedureBlock>]? | <IF-THENStatement> [<WHITESPACE> <ProcedureBlock>]? | <ProcedureBlock>;
+
+<ProcedureBlock> ::= 'BEGIN' [<INDENT> <ProcedureBody>]? 'END' <SEMICOLON>;
+
+<ProgramName> ::=  <IDENTIFIER> [<SPACE>]? <IDENTIFIER>;
+
+<VariableDeclaration> ::= <IDENTIFIER> <EQUALS> <INTEGER> <SEMICOLON>;
+
+<MotionCommand> ::= <ActionCommand> <LPAREN> <Command> <COMMA> <DistanceCommand> <COMMA> <ModeCommand> <COMMA> <SpeedCommand> <RPAREN> <SEMICOLON> | <ActionCommand> <LPAREN> <ModeCommand> <COLON> <PhonemeArray> <HASH> <RPAREN> 							<SEMICOLON>;
+
+<ActionCommand> ::= 'MOVE' | 'SPEAK' | 'SENSE';
+
+<Command> ::= 'EXTEND' | 'SHOULDER' | 'ROATATE' | 'PIVOT' | 'GRIP' | 'HEAD' | 'STEER' | 'DRIVE';
+
+<ModeCommand> ::= 'MOVE' | 'WAIT' | 'CONT';
+
+<SpeedCommand> ::= 'SLOW' | 'MED' | 'FAST';
+
+<DistanceCommand> ::= <INTEGER> | 'HI' | 'MED' | 'LOW' | <Variable>;
+
+<VariableAssignment> ::= <VariableName> <EQUALS> <INTEGER> <SEMICOLON> | <VariableName> <EQUALS> <Variable> <SEMICOLON>;
+
+<VariableArithmetic> ::= <Variable> <EQUALS> <Variable> <OPERATOR> <Variable> <SEMICOLON> | <Variable> <EQUALS> <Variable> <OPERATOR> <INTEGER> <SEMICOLON> | <Variable> <EQUALS> <INTEGER> <OPERATOR> <INTEGER> <SEMICOLON>;
+
+If Statement:
+<IF-THENStatement> ::= IF <BooleanStatement> THEN
+					   BEGIN
+					   		[<ProcedureBlock>]
+					   END;
+<IF-THENStatement> ::= <IFCondition> <WHITESPACE> <ProcedureBlock>;
+
+<IFCondition> ::= 'IF' <SPACE> <LPAREN> <BooleanStatment> <RPAREN> <SPACE> 'THEN' | 'IF <SPACE> <LPAREN> <ActionCommand> <RPAREN> <SPACE> 'THEN';
+
+
+<BooleanStatement> ::= [<Variable>|<INTEGER>|<BooleanStatement>] {[<OPERATOR>|<LPAREN>] [[OPERATOR]?<Variable>|<INTEGER>|<BooleanStatement>] [<RPAREN>]} ;
+
+<Variable> ::= <INTEGER> | <Array 1D> | <Array 2D> | <PhonemeArray>;
+
+<Array 1D> ::= <HEXADECIMAL> [{"," <HEXADECIMAL> | "," <INTEGER>}] | <INTEGER> [{"," <INTEGER> | "," <HEXADECIMAL>}] | ' ';	(*No declaration required.*)
+
+<Array 2D> ::=  <HEXADECIMAL> [{"," <HEXADECIMAL> | "," <INTEGER>}] | <INTEGER> [{"," <INTEGER> | "," <HEXADECIMAL>}] | ' ';
+
+<PhonemeArray> ::= <HEXADECIMAL> {<HEXADECIMAL>};
+
+<PhonemeDeclaration> ::= "DIMENSION" <SPACE> <IDENTIFIER> <HASH> <SLPAREN> <HEXADECIMAL> <SRPAREN> [{"," <SPACE> <IDENTIFIER> <HASH> <SLPAREN> <HEXADECIMAL> <SRPAREN>}];
+
+<PhonemeAssignment> ::= <IDENTIFIER> <HASH> <SLPAREN> <PhonemeSize> <STRING> <HEXADECIMAL> [',' <HEXADECIMAL>]* <STRING>;
+
+<PhonemeSize> ::= <HEXADECIMAL> <COLON> <HEXADECIMAL>;
+
+While Loop:
+<WHILE-DoLoop> ::= WHILE (<BooleanStatement>)
+				   BEGIN
+				   		[<ProcedureBlock>]
+				   END;
+<WHILE-DOLoop> ::= 'WHILE' <SPACE> <LPAREN> <BooleanStatement> <RPAREN> <WHITESPACE> <ProcedureBlock> | 'WHILE' <SPACE> <LPAREN> <ActionCommand> <RPAREN> <WHITESPACE> <ProcedureBlock>;
+
+GOTO Loop:
+<GOTOLoop> ::= <IDENTIFIER>: IF <BooleanStatement> THEN
+			   GOTO <IDENTIFIER>
+			   BEGIN
+			   		[<ProcedureBlock>]
+			   END;
+<GOTOLoop> ::= <ReturnPlace> <IF-THENStatement> <WHITESPACE> 'GOTO' <IDENTIFIER> <WHITESPACE> [<ProcedureBlock>]?;
+
+<ReturnPlace> ::= <IDENTIFIER> <COLON>;
+
+Procedure Declaration:
+<ProcedureDeclaration> ::= [$]PROCEDURE <INDENTIFIER>;
+						   <ProcedureBlock>
+<ProcedureDeclaration> ::= 'PROCEDURE' <ProcedureName> <SEMICOLON> <WHITESPACE> <ProcedureBlock> [<ProcedureDeclaration>]? |  '$PROCEDURE' <ProcedureName> <SEMICOLON> <WHITESPACE> <ProcedureBlock> [<ProcedureDeclaration>]?;
+
+<AccessCommand> ::= <State> <ControlCommand> <SEMICOLON>;
+
+<State> ::= 'ENABLE' | 'DISABLE';
+
+<ControlCommand> ::= 'LISTEN' | 'MOTION'; 
+
+<ProcedureCall> ::= 'CALL' <ProcedureName> <SEMICOLON>;
+
+<IntegerDeclaration> ::= <IDENTIFIER> <EQUALS> <Variable> <SEMICOLON>;
+
+
+Comment:
+(* Some text *)
+<Comment> ::= <OpenComment> <CommentBody> <CloseComment>;
+
+<OpenComment> ::= <LPAREN> <STAR> <SPACE>;
+
+<CloseComment> ::= <SPACE> <STAR> <RPAREN>;
+
+<CommentBody> ::= <CommentString>*;
+
+<CommentString> ::= [<ALPHA>|<DIGIT>|<SPACE>] [<APLHA>|<DIGIT>|<SPACE>]*;
+
+COLON ::= ':';
+SEMICOLON ::= ';';
+EQUALS ::= ':=';
+HASH ::= '#';
+LPAREN ::= '(';
+RPAREN ::= ')';
+SLPAREN ::= '[';
+SRPAREN ::= ']';
+COMMA ::= ',';
+QUOTE ::= ' ' ';
+STRING ::= ' " ';
+ALPHA ::= [A-Za-z];
+DIGIT ::= [0-9];
+HEXADECIMAL ::= DIGIT | [A-F];
+SPACE ::= ' ';
+STAR ::= '*';
+WHITESPACE ::= EOL;
+OPERATOR ::= < | > | = | != | <= | >= | <> | + | - | !;
+LOGIC ::= 'AND' | 'OR' | 'NOT';
+NEGATIVESIGN ::= '-';
+INTEGER ::= [NEGATIVESIGN]? DIGIT+(.DIGIT+)? | [NEGATIVESIGN]? HEXADECIMAL+(.HEXADECIMAL+)?;
+IDENTIFIER ::= ALPHA(ALPHA|DIGIT)*;
+INDENT ::= TAB -> skip;
+TAB ::= '\t';
+
+'?' = 0 or 1;
+'+' = 1 or more;
+'*' = 0 or more;
+
+PARSER RULES:
+
+Program <- ProgramName EOL (VariableDeclaration)* EOL (ProcedureDeclaration)* EOL token EOL Indent (ProcedureBody)* EOL token EOL;
+
+programName <- identifier(space identifier)?;
+
+ProcedureDec <- ($)?'PROCEDURE' space ProcedureName EOL (ProcedureBlock)+;
+
+integer <- ('+'/'-')? digit+;
+
+digit <- [0-9];
+
+hexadecimal <- ('+'/'-')? digit[A-F]+;
+
+alpha <- [a-zA-Z]+;
+
+operator <- '<'/'>'/'='/'!='/'<='/'>='/'<>'/'+'/'-'/':='/'!';
+
+EOL <- ';'/ '\n';
+
+space <- ' ';
+
+logic <- 'AND'/'OR'/'NOT';
+
+identifier <- alpha(alpha/digit)*;
+
+Token <- 'BEGIN'/'END'/'IDENTIFIER'/'DIMENSION';
+
+Indent <- tab -> skip;
+
+tab <- '\t';
+
+Comment <- OpenComment (space)? CommentBody (space)? CloseComment;
+
+OpenComment <- '(*';
+
+CloseComment <- '*)';
+
+CommentBody <- CommentString*;
+
+CommentString <- (alpha/digit/space)+(alpha/digit/space)*;
+
+BoolState <- (variable/integer/BoolState)(space)?operator(space)?(variable/integer/BoolState)/(variable/integer/BoolState)(space)?'('((operator)?variable/integer/BoolState)')';
+
+variable <- integer/1Darray/2Darray/phonemeArray;
+
+1Darray <- (hexadecimal/integer) (("," hexadecimal / "," integer)*)? / empty;
+
+2Darray <- (hexadecimal/integer) (("," hexadecimal / "," integer)*)? / empty;
+
+phonemeArray <- hexadecimal (hexadecimal)*;
+
+phonemeDeclaration <- token space identifier '#' '[' hexadecimal ']' ("," space identifier '#' '[' hexadecimal ']')*;
+
+phonemeAssign <- identifier '#' '[' PhonemeSize ' " ' hexadecimal (',' hexadecimal)* ' " ';
+
+PhonemeSize <- hexadecimal ':' hexadecimal;
+
+variableAssign <- variableArith;
+
+variableArith <-  variable(space)?operator(space)?(variable/integer)((space)?(operator variable)?/(operator integer)?)+ EOL ;
+
+Gotoloop <- ReturnPlace space IF-THENStatement EOL 'GOTO' space IDENTIFIER EOL (ProcedureBlock)? ;
+
+ReturnPlace <- identifier ':';
+
+ProcedureBlock <-  token EOL (Indent ProcedureBody)? EOL token EOL ;
+
+ProcedureBody <- variableDeclaration EOL (ProcedureBlock)? / MotionCommand EOL (ProcedureBlock)? / variableAssignment EOL (ProcedureBlock)? / variableArithmetic EOL (ProcedureBlock)? / GOTOLoop EOL (ProcedureBlock)? / 								 WHILE-DOLoop EOL (ProcedureBlock)? / IF-THENStatement EOL (ProcedureBlock)? / ProcedureBlock;
+
+variableDec <- (identifier operator (integer/variable))/variableArith ';' ;
+
+motionCommand <- ActionCommand ('(' Command ',' DistanceCommand ',' ModeCommand ',' SpeedCommand ')' / '(' ModeCommand ':' (phonemeArray '#' ')')+) EOL;
+
+ActionCommand <- 'MOVE'/'SPEAK'/'SENSE';
+
+Command <- 'EXTEND'/'SHOULDER'/'ROATATE'/'PIVOT'/'GRIP'/'HEAD'/'STEER'/'DRIVE';
+
+DistanceCommand <- INTEGER/'HI'/'MED'/'LOW'/variable;
+
+ModeCommand <- 'MOVE'/'WAIT'/'CONT';
+
+SpeedCommand <- 'SLOW'/'MED'/'FAST';
+
+While-DoLoop <- 'WHILE'(space)?'('(((BooleanStat)+((space)?(Logic(space)?BooleanStat)*)?)/ActionCommand'('(integer/hexadecimal/variable)')' ) ')'EOL(ProcedureBlock)?;
+
+If-ThenLoop <- IFCondition EOL (ProcedureBlock)?;
+
+IFCondition <- 'IF' (space)?'('(((BooleanStat)+((Logic BooleanStat)*)?)/ActionCommand'('(integer/hexadecimal/variable)')' ) ')'(space)?'THEN';
+
+AccessCommand <- State space ControlCommand EOL;
+
+state <- ('Enable'/'Disable')EOL;
+
+ControlCommand <- (LISTEN'/'MOTION')EOL;
+
+ProcedureCall <- 'Call' space procedureName EOL;
+
+IntegerDec <- identifier (space)?operator ((space)?variable (operator)?)* ';';
+
+EXAMPLES:
+
+Test SQUARE;										(*Program name, moves in a square*)
+Distance := 10;										(*Variable declaration, all of them are integers and therefore have to be assigned a value*)
+Counter := 10;
+ClapCounter := 0;
+PROCEDURE AddDistance;								(*Procedure declaration*)
+BEGIN												(*Start of procedure block*)
+	Distance := Distance + 10;						(*Adds ten to variable*)
+END;												(*End of block*)
+PROCEDURE Wait
+BEGIN
+	WHILE (Counter != 0)							(*While loop using the variable Counter as the terminating condition*)
+	BEGIN											(*The block belonging to the while loop*)
+		Counter := Counter - 1;
+	END;
+	counter := 10;
+END;
+BEGIN 												(*Beginning of the main program*)
+	WHILE (ClapCounter <= Counter)
+	BEGIN
+		ENABLE LISTEN;								(*Turns on sound detector*)
+		LOOPA:IF (SENSE(10)) THEN 					(*Return place set, If statement for checking sound*)
+		GOTO LOOPA;									(*If no sound, it will loop*)
+		BEGIN
+		END;
+		ClapCounter := ClapCounter + 1;	
+		DISABLE LISTEN;								(*Turns off the sound detector, its not needed currently*)
+		WHILE (ClapCounter < 4)
+		BEGIN
+			MOVE(DRIVE,Distance,WAIT,MED);			(*Movement command. Move forward for 'Distance' at a medium speed, wait after complete*)
+			MOVE(SHOULDER,HI,CONT,SLO);				(*Movement command for arm, move as high as it can at a slow speed. Do not wait after*)
+			CALL Wait;								(*Procedure call*)
+			HandCounter := 2;						(*Set handCounter to 2*)
+			WHILE (HandCounter > 0)
+			BEGIN
+				MOVE(GRIP,HI,CONT,FAST);			(*Movement command for gripper, open gripper at a fast speed, and continue*)
+				MOVE(GRIP,LOW,CONT,MED);			(*Then close the gripper, at a medium level speed, and continue*)
+				HandCounter := HandCounter - 1;		(*Decrement HandCounter*)
+			END;									(*End of while loop block*)
+			MOVE(PIVOT,-90,WAIT,SLO);				(*Turns left, slowly, and waits for the next command*)
+			ClapCounter := ClapCounter + 1;
+		END;										(*End of Second WHILE block*)
+		CALL AddDistance;
+	END;											(*End of WHILE block*)
+END;												(*End of program block*)
+
+Test SPEECH;										(*Program to test speech and movement*)
+DIMENSION Test1#[251];								(*Declaration of phoneme array, with pre-set size*)
+counter := 0;
+BEGIN 												(*Not sure how the phoneme array works so, I put the hexadecimal for each letter in the message. It should say "This is a test!"*)
+	Test1#[1:231 := "54,68,69,73,20,69,73,20,61,20,74,65,73,74,21";
+	LOOP1: SPEAK(WAIT : Test1#);					(*Command for the string in Test1# to be outputted*)
+	MOVE(DRIVE,10,WAIT,SLO);						(*Move forward at a slow pace for a distance of 10, then wait*)
+	counter := counter + 1;							(*Increment the counter by 1*)
+	MOVE(DRIVE,-15,WAIT,MED);						(*Move backwards at a medium level speed, for a distance of 15, then wait*)				
+	counter := counter + 1;							
+	MOVE(DRIVE,5,CONT,FAST);						(*Move forwards by 5 at a fast speed and continue with the next command*)
+	counter := counter + 1;
+	MOVE(PIVOT,360,WAIT,SLO);						(*Turn on the spot a full 360° at a slow speed, and wait for next command*)
+	MOVE(PIVOT,-180,CONT,MED);						(*Turn on the spot for 180° anticlockwise, at a medium level speed and continue onto the next command*)
+	MOVE(DRIVE,10,WAIT,FAST);						(*Move forward at a fast speed for a distance of 10, and wait for the next command*)
+	counter := counter + 1;
+	IF (counter <= 8) THEN 							(*Checking if the the counter is less than or equal to 8*)
+	GOTO LOOP1;										(*If it is the 'GOTO' statement is executed and the program returns to the designated return place*)
+	BEGIN
+	END;											(*Empty IF-THEN block, nothing happens*)
+END;												(*End of program block*)
+
+EIGHTPOINT;											(*Program to move to eight, equally spaced, points and say when it has done it for an even number of times*)
+PointCounter := 0;
+Angle := 0;
+DIMENSION TEST#[300];
+PROCEDURE IncrementAngle;
+BEGIN
+	Angle := Angle + 45;
+END;
+BEGIN 												(*TEST# is meant to say "This is an even number!"*)
+	TEST#[1:280 := "54,68,69,73,20,69,73,20,41,6E,20,65,76,65,6E,20,6E,75,6D,62,65,72,21";
+	WHILE (PointCounter < 8)
+	BEGIN
+		MOVE(ROTATE,Angle,WAIT,MED);				(*Rotate to a set angle at medium level speed*)
+		CALL IncrementAngle;						(*Procedure call*)
+		MOVE(DRIVE,10,CONT,MED);					(*Move forward at a medium level speed for a distance of ten*)
+		IF ((PointCounter/2)==0) THEN 				(*IF Counter is even enter the block*)
+		BEGIN
+			MOVE(ROTATE,360,CONT,FAST);				(*Rotate a full 360° at a fast speed*)
+			SPEAK(CONT : TEST#);					(*Output the preset phrase*)
+		END;
+		MOVE(ROTATE,180,CONT,MED);					(*Turn around*)
+		MOVE(DRIVE,10,CONT,MED);					(*Return to the central point*)
+		PointCounter := PointCounter + 1;			(*Increment the counter by 1*)
+	END;
+END;
+
+Collection Test;									(*Program testing movement and collection of items)
+Distance := 0;
+MOTIONFLG := 0;										(*Declaration of variables*)
+PROCEDURE Grab;										(*Procedure for grabbing an item at a medium height level*)
+BEGIN
+	MOVE(SHOULDER,MED,CONT,FAST);
+	MOVE(GRIP,HI,CONT,MED);
+	MOVE(DRIVE,5,CONT,SLO);
+	MOVE(GRIP,LOW,WAIT,MED);
+	MOVE(DRIVE,-5,CONT,SLO);
+END;
+$PROCEDURE WAITFOR									(*Machine code procedure made to wait for the motion sensor to be interupted*)
+BEGIN
+END;
+PROCEDURE Return;
+BEGIN
+	MOVE(ROTATE,180,CONT,SLO);
+	MOVE(DRIVE,Distance,CONT,MED);
+END;
+PROCEDURE IncreaseDistance;
+BEGIN
+	Distance := Distance + 10;
+END;
+PROCEDURE WAIT;										(*Procedure used to wait for clap and reset the motion flag*)
+BEGIN
+	ENABLE LISTEN;
+	LOOP1: IF (SENSE (10)) THEN 					(*Waiting for a clap*)
+	GOTO LOOP1;
+	BEGIN
+	END;
+	DISABLE LISTEN;
+	MOTIONFLG := 0;									(*Reset motion flag*)
+END;
+PROCEDURE Motion;									(*Procedure for moving whenever motion is detected*)
+BEGIN
+	ENABLE MOTION;
+	CALL WAITFOR;
+	MOVE(DRIVE,10,CONT,FAST);
+	MOTIONFLG := MOTIONFLG + 1;						(*Sets the motion flag to 1, to show that the sensor has detected something*)
+END;
+BEGIN
+	LOOP: CALL Motion;
+	IF (MOTIONFLG > 0) THEN 						(*If the motion flag has detected something continue to block, otherwise ignore it*)
+	BEGIN
+		CALL WAIT;
+		CALL IncreaseDistance;
+	END;
+	IF (Distance < 30) THEN 
+	GOTO LOOP;
+	BEGIN 											(*Empty block for the GOTO loop*)
+	END;
+	CALL Grab;
+	CALL Return;
+END;
